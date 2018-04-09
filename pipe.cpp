@@ -109,14 +109,12 @@ class Point {
 // RetVal:  None
 // MetCall: NULL
 void send( int fd, deque<Point> &q ) {
-   cout << "send(): FD == " << fd << endl;
    int size = q.size();
    double x  [ size ];
    double y  [ size ];
    int    id [ size ];
 
    // Serialize all deque items to x, y, and id arrays
-   cout << "send() - Serializing..." << endl;
    for ( int i = 0 ; i < size ; i++ ) {
       Point p = q.front();
       x[i] = p.x;
@@ -126,7 +124,6 @@ void send( int fd, deque<Point> &q ) {
    }
 
    // Send all data through a pipe
-   cout << "send() - Writing..." << endl;
    write( fd, &size, sizeof(int));
    write( fd, x, sizeof( double ) * size );
    write( fd, y, sizeof( double ) * size );
@@ -199,12 +196,15 @@ deque<Point> pipe_test() {
 
       // Make a sample deque
       cout << "(L) Sample deque..." << endl;
-      Point* samplePtr = new Point;
+      Point* samplePtr  = new Point(0, 0, 0);
+      Point* samplePtr2 = new Point(1, 1, 1);
       deque<Point> sampleDeckL;
       sampleDeckL.push_back(*samplePtr);
+      sampleDeckL.push_back(*samplePtr2);
 
       // Send the packet
       cout << "(L) Sending deque..." << endl;
+      sleep(5);
       send(SEND_L, sampleDeckL);
 
       // Close this process, its work is complete
@@ -244,12 +244,15 @@ deque<Point> pipe_test() {
 
       // Make a sample deque
       cout << "(R) Sample deque..." << endl;
-      Point* samplePtr = new Point(1, 1, 1);
+      Point* samplePtr  = new Point(2, 2, 2);
+      Point* samplePtr2 = new Point(3, 3, 3);
       deque<Point> sampleDeckR;
       sampleDeckR.push_back(*samplePtr);
+      sampleDeckR.push_back(*samplePtr2);
 
       // Send the packet
       cout << "(R) Sending deque..." << endl;
+      sleep(5);
       send(SEND_R, sampleDeckR);
 
       // Close this process, its work is complete
@@ -277,7 +280,13 @@ deque<Point> pipe_test() {
    cout << "Children closed (L & R)." << endl;
    deque<Point> results;
    results.push_back(lResult.front());
+   lResult.pop_front();
+   results.push_back(lResult.front());
+
    results.push_back(rResult.front());
+   rResult.pop_front();
+   results.push_back(rResult.front());
+
    return(results);
 
 } // Closing pipe_test()
@@ -291,6 +300,8 @@ int main( int argc, char* argv[] ) {
    cout << "Results:" << endl;
    resultDQ.at(0).print();
    resultDQ.at(1).print();
+   resultDQ.at(2).print();
+   resultDQ.at(3).print();
 
    return 0;
 } // Closing main()
